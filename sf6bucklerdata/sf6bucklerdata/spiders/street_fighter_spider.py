@@ -23,7 +23,8 @@ class StreetFighterSpider(scrapy.Spider):
     name = "street_fighter_spider"
     custom_settings = {**COMMON_SPIDER_SETTINGS}
 
-    players_per_rank = {'m': 13978, 'd': 56252, 'p': 266185, 'g': 229197, 's': 282945, 'b': 205462, 'i': 209900}
+    # Data as of 8.30.23 8 PM PST
+    players_per_rank = {'m': 51004, 'd': 124914, 'p': 448636, 'g': 327783, 's': 375164, 'b': 257380, 'i': 254701}
     pages_per_rank = {}
     current_page = 0
 
