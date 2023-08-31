@@ -8,6 +8,10 @@ from selenium import webdriver
 from selenium.webdriver.firefox.options import Options
 from spiders.middlewares import RetryChangeProxyMiddleware, RandomUserAgentMiddleware
 from config import COMMON_SPIDER_SETTINGS
+from selenium.webdriver.firefox.service import Service as FirefoxService
+from webdriver_manager.firefox import GeckoDriverManager
+
+driver = webdriver.Firefox(executable_path=GeckoDriverManager().install())
 
 logging.basicConfig(
     level=logging.INFO,
@@ -70,7 +74,7 @@ class StreetFighterSpider(scrapy.Spider):
             page = random.randint(start_page, end_page)
             if page not in self.sampled_pages_per_rank[rank]:
                 self.sampled_pages_per_rank[rank].add(page)
-                url = f"https://www.streetfighter.com/6/buckler/ranking/league?character_filter=1&character_id=luke&platform=1&user_status=1&home_filter=1&home_category_id=0&home_id=1&league_rank=0&page={page}"
+                url = f"https://www.streetfighter.com/6/buckler/ranking/league?character_filter=4&character_id=luke&platform=1&user_status=1&home_filter=1&home_category_id=0&home_id=1&league_rank=0&page={page}"
                 yield scrapy.Request(url, cookies=cookies, callback=self.parse_page,
                                      headers={'Referer': None},
                                      cb_kwargs={'rank': rank, 'page': page, 'cookies': cookies})
