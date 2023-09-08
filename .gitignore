@@ -9,3 +9,8 @@ dist/
 *.egg-info/
 .idea/
 .vscode/
+debug.log
+geckodriver.log
+
+#scrapy requests
+/sf6analysisData/.scrapy

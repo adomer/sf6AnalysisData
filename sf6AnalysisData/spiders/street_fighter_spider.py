@@ -27,8 +27,18 @@ class StreetFighterSpider(scrapy.Spider):
     name = "street_fighter_spider"
     custom_settings = {**COMMON_SPIDER_SETTINGS}
 
-    # Data as of 8.30.23 8 PM PST
-    players_per_rank = {'m': 51004, 'd': 124914, 'p': 448636, 'g': 327783, 's': 375164, 'b': 257380, 'i': 254701}
+    # Data as of 7.15.23 (from stellaskyler)
+    # {'m': 13978, 'd': 56252, 'p': 266185, 'g': 229197, 's': 282945, 'b': 205462, 'i': 209900}
+    
+    # Data as of 8.30.23 8 PM PST 
+    # {'m': 51004, 'd': 124914, 'p': 448636, 'g': 327783, 's': 375164, 'b': 257380, 'i': 254701}
+
+    # Data as of 9.5.23 12 PM PST
+    # players_per_rank = {'m': 55779, 'd': 131548, 'p': 461286, 'g': 334709, 's': 382729, 'b': 260837, 'i': 258157}
+   
+
+    # Data as of 9.7.23 5:30 PM PST
+    players_per_rank = {'m': 57476 }
     pages_per_rank = {}
     current_page = 0
 
@@ -62,6 +72,8 @@ class StreetFighterSpider(scrapy.Spider):
         for rank in self.players_per_rank:
             yield from self.request_rank_pages(rank, cookies_dict)  # Pass cookies dict
 
+
+    # min sample size based on a 57.5K pop size @ 95% confidence with a 2% margin of error is 2305. Will be rounding up to 2500.
     def request_rank_pages(self, rank, cookies):
         start_page, end_page = self.pages_per_rank[rank]
         while len(self.valid_samples_per_rank[rank]) < 2500 and len(self.sampled_pages_per_rank[rank]) < (
@@ -74,7 +86,7 @@ class StreetFighterSpider(scrapy.Spider):
             page = random.randint(start_page, end_page)
             if page not in self.sampled_pages_per_rank[rank]:
                 self.sampled_pages_per_rank[rank].add(page)
-                url = f"https://www.streetfighter.com/6/buckler/ranking/league?page={page}"
+                url = f"https://www.streetfighter.com/6/buckler/ranking/league?character_filter=1&character_id=luke&platform=1&user_status=1&home_filter=1&home_category_id=0&home_id=1&league_rank=36&page={page}"
                 yield scrapy.Request(url, cookies=cookies, callback=self.parse_page,
                                      headers={'Referer': None},
                                      cb_kwargs={'rank': rank, 'page': page, 'cookies': cookies})
@@ -107,31 +119,42 @@ class StreetFighterSpider(scrapy.Spider):
             script_tag = response.css('script#__NEXT_DATA__::text').get()
             if script_tag is not None:
                 json_data = json.loads(script_tag)
-                characters_data = json_data['props']['pageProps']['play']['character_win_rates']
-                total_battle_stats = json_data['props']['pageProps']['play']['battle_stats']
+                # commenting out - not relevant for this analysis
+                # characters_data = json_data['props']['pageProps']['play']['character_win_rates']
+                # added to query for master rating
+                character_league_infos = json_data['props']['pageProps']['play']['character_league_infos']
+                # commenting out - not relevant for this analysis
+                # total_battle_stats = json_data['props']['pageProps']['play']['battle_stats']
 
-                ranked_battle_count = total_battle_stats['rank_match_play_count']
+                # commenting out - not relevant for this analysis
+                # ranked_battle_count = total_battle_stats['rank_match_play_count']
+                
+                # commenting out - not relevant for this analysis
+                # character_data = next(
+                #     (data for data in characters_data if data['character_name'].lower() == character.lower()), None)
 
-                character_data = next(
-                    (data for data in characters_data if data['character_name'].lower() == character.lower()), None)
+                # initialize variable looking at max rating value across characters
+                masters_data = max(character_league_infos, key=lambda x:x['league_info']['master_rating'])
 
-                if character_data is not None and ranked_battle_count >= 100:
-                    if character_data['battle_count'] != 0:
-                        win_ratio = character_data['win_count'] / character_data['battle_count']
-                        scaled_win_count = win_ratio * ranked_battle_count
-                    else:
-                        win_ratio = 0
-                        scaled_win_count = 0
+                # commenting out - not relevant for this analysis
+                # if character_data is not None and ranked_battle_count >= 90:
+                #     if character_data['battle_count'] != 0:
+                #         win_ratio = character_data['win_count'] / character_data['battle_count']
+                #         scaled_win_count = win_ratio * ranked_battle_count
+                #     else:
+                #         win_ratio = 0
+                #         scaled_win_count = 0
 
-                    self.valid_samples_per_rank[rank].append(
-                        [username, rank, character, ranked_battle_count, scaled_win_count])
-                    logging.info(f"{rank}: {len(self.valid_samples_per_rank[rank])}/{2500}")
-                    if len(self.valid_samples_per_rank[rank]) >= 2500:
+                    # added desired json outputs, removed mention of win #'s and rank
+                self.valid_samples_per_rank[rank].append(
+                    [username, masters_data['league_info']['master_rating'], masters_data['character_name']])
+                logging.info(f"{rank}: {len(self.valid_samples_per_rank[rank])}/{2500}")
+                if len(self.valid_samples_per_rank[rank]) >= 2500:
                         self.write_to_csv(rank)
                         self.valid_samples_per_rank[rank] = []  # Reset the samples for the rank
                         self.rank_flags[rank] = True  # Set the flag to True for the rank
 
-                    if all(self.rank_flags.values()):
+                if all(self.rank_flags.values()):
                         # If all rank flags are True, indicating all ranks have reached the threshold, close the spider
                         self.crawler.engine.close_spider(self, "All ranks have reached the threshold")
 
