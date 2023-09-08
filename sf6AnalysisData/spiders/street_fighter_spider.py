@@ -74,7 +74,7 @@ class StreetFighterSpider(scrapy.Spider):
             page = random.randint(start_page, end_page)
             if page not in self.sampled_pages_per_rank[rank]:
                 self.sampled_pages_per_rank[rank].add(page)
-                url = f"https://www.streetfighter.com/6/buckler/ranking/league?character_filter=4&character_id=luke&platform=1&user_status=1&home_filter=1&home_category_id=0&home_id=1&league_rank=0&page={page}"
+                url = f"https://www.streetfighter.com/6/buckler/ranking/league?page={page}"
                 yield scrapy.Request(url, cookies=cookies, callback=self.parse_page,
                                      headers={'Referer': None},
                                      cb_kwargs={'rank': rank, 'page': page, 'cookies': cookies})
@@ -115,7 +115,7 @@ class StreetFighterSpider(scrapy.Spider):
                 character_data = next(
                     (data for data in characters_data if data['character_name'].lower() == character.lower()), None)
 
-                if character_data is not None and ranked_battle_count >= 90:
+                if character_data is not None and ranked_battle_count >= 100:
                     if character_data['battle_count'] != 0:
                         win_ratio = character_data['win_count'] / character_data['battle_count']
                         scaled_win_count = win_ratio * ranked_battle_count
