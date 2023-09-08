@@ -1,6 +1,7 @@
 # Exploratory Analysis
 
-All data was pulled from https://www.streetfighter.com/6/buckler/ranking/league.
+All data was pulled from https://www.streetfighter.com/6/buckler/ranking/league. The live dashboard with the visualizations can be found here: https://public.tableau.com/app/profile/austin.domer5220/viz/SF6MasterAnalysis/SF6_Analysis. 
+Details around the spider can be found below.
 
 The initial randomly selected sample size for this analysis was 29890 profiles. At the time of data extraction (9.8.23 6:30 AM PST), the total number of master rank players was 57476. In the August patch, Master Rating (MR) as a system was introduced to provide elo rankings for characters within the Master league. Anyone who was in Master that hasn't played a game since that patch would flag with a MR of 0. From this random pull, there were a total of 2200 selected profiles that hadn't played a ranked game since the August patch. These profiles will be treated as null as they may not reflect the current state of the meta, and their prior character's data isn't available with this method of scraping. Removing these from the dataset, grants a final sample size of 27691. Using a confidence level of 95%, we get an expected margin of error of 0.42% for the results. At the time of writing this analysis, the Master rank is comprised of the top 1.9% of players across SF6's playerbase. Given all players in this sample are master rank, it's safe to assume they've played enough games to have a solid understanding of the game and their character.
 
@@ -22,13 +23,13 @@ For this visualization, the MR for each player were bucketed into one of the fol
 
 The distributions here fall in line with the overall character distributions, with Ken and JP dominating the top 2 spots for each of the buckets. There's an interesting swap in the 2000+ bucket with Dee Jay falling out of top 5, and Chun Li claiming the #3 spot. The influence here may be similar to Ken's, with a Chun-Li placing in Top 8 at Evo, with 0 Dee Jay representation in the Top 8. Chun Li may have a higher skill ceiling leading to greater reward for mastery which explains this higher than normal representation in the top bracket.
 
-## Character Count by Aggregate Master Rating
+## Character Count by Aggregate Master Rating (MR)
 
 This visualization maps aggregate master rating by character against the total count of said character. The goal here was to identify if there were any trends and to possibly identify any characters that may have a higher than usual ratio of master rating to pick rate. The correlation here was actually extremely strong with most character counts falling directly on the peak of the aggregate master rating give or take a couple thousand rating points. The largest discrepancies appear to be between Zangief, Ryu, JP, and Chun-Li. JP and Chun-Li's intersection is below the aggregate rating, indicating that their players on average have more master rating than their counterparts, whereas Zangief and Ryu are the opposite. Both JP and Chun-Li are regarded as strong characters whereas Zangief and Ryu are regarded as weaker characters, so this falls in line with expectations.
 
 Taking this a step further to build out a fraud index per character to indicate whether some characters have a higher likelihood of 'carrying' their player through the ranks would be an interesting next step.
 
-## Street Fighter Spider
+# Street Fighter Spider
 
 Street Fighter Spider is a Python web scraper based on Scrapy that scrapes the Street Fighter gaming site for player data. It uses Selenium for dealing with JavaScript and to control the flow of the application.
 
@@ -45,7 +46,7 @@ This project requires Python 3.7+ and the following Python libraries installed:
 
 You will also need to have Firefox installed on your machine, as the project uses the Firefox webdriver for Selenium.
 
-### Project Structure
+## Project Structure
 
 The project consists of several Python files organized into the following structure:
 
@@ -65,7 +66,7 @@ The project consists of several Python files organized into the following struct
 - `RandomUserAgentMiddleware` sets a random User-Agent for each request to help avoid getting blocked by the site.
 - `RetryChangeProxyMiddleware` handles failed requests and retries them after adjusting the delay.
 
-### How the Spider Works
+## How the Spider Works
 
 This spider fetches player data and writes it into CSV files. It uses Selenium to handle pages that contain JavaScript and also implements retry logic and request delay adjustment based on consecutive failed requests.
 
@@ -81,7 +82,7 @@ Once it has collected enough samples for a rank, it writes the data to a CSV fil
 
 If the spider encounters an error while fetching a page, it retries the request with an exponential backoff delay. This helps to handle temporary issues like network errors or server overloads.
 
-### Output
+## Output
 
 The spider writes the scraped data to CSV files. There is a separate file for each rank. The files are named like `output_{rank}.csv`, where `{rank}` is the rank of the players in the file.
 
@@ -93,13 +94,13 @@ Each row in the CSV files contains the following fields:
     Ranked Battle Count: The total number of ranked battles played by the player
     Scaled Win Count: The win count of the player, scaled according to their win ratio and ranked battle count
 
-### Limitations and Considerations
+## Limitations and Considerations
 
 - The scraper is dependent on the structure of the web pages. If the site changes its layout or the way it delivers data, the scraper may stop working.
 - The scraper uses a single-threaded model for fetching pages. Although it can handle a high number of requests, it may not be the most efficient method for large-scale scraping.
 - The scraper does not use proxies to rotate IP addresses. If the site blocks your IP due to too many requests, you may need to wait a while before running the scraper again.
 
-### How to Run
+## How to Run
 
 Before running, update the players_per_rank in the spider to reflect current numbers, check and/or change the user agents, and check/change the output file.
 
@@ -109,7 +110,7 @@ You can run the scraper from your terminal using the following command:
 python main.py
 ```
 
-### Disclaimer and Liability
+## Disclaimer and Liability
 
 Please be advised that this repository is provided for instructional and educational purposes only.
 
@@ -119,6 +120,6 @@ Under no circumstances should the code be used for any illegal or unethical acti
 
 Please use this code responsibly and consider the potential impact on servers, respect privacy, and adhere to all relevant terms of service and laws. If you choose to use the code provided in this repository, you do so at your own risk.
 
-### License
+## License
 
 This project is licensed under the MIT License. This license does not include the right to use this code, or any derivative work thereof, for any illegal or unethical activities. By using or adapting this code, you agree to assume all liability and responsibility for your actions.
