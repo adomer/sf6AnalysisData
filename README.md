@@ -22,7 +22,7 @@ For this visualization, the MR for each player were bucketed into one of the fol
 
 The distributions here fall in line with the overall character distributions, with Ken and JP dominating the top 2 spots for each of the buckets. There's an interesting swap in the 2000+ bucket with Dee Jay falling out of top 5, and Chun Li claiming the #3 spot. The influence here may be similar to Ken's, with a Chun-Li placing in Top 8 at Evo, with 0 Dee Jay representation in the Top 8. Chun Li may have a higher skill ceiling leading to greater reward for mastery which explains this higher than normal representation in the top bracket.
 
-## Character Count by Aggregate Master Rating
+## Character Count by Aggregate Master Rating (MR)
 
 This visualization maps aggregate master rating by character against the total count of said character. The goal here was to identify if there were any trends and to possibly identify any characters that may have a higher than usual ratio of master rating to pick rate. The correlation here was actually extremely strong with most character counts falling directly on the peak of the aggregate master rating give or take a couple thousand rating points. The largest discrepancies appear to be between Zangief, Ryu, JP, and Chun-Li. JP and Chun-Li's intersection is below the aggregate rating, indicating that their players on average have more master rating than their counterparts, whereas Zangief and Ryu are the opposite. Both JP and Chun-Li are regarded as strong characters whereas Zangief and Ryu are regarded as weaker characters, so this falls in line with expectations.
 
