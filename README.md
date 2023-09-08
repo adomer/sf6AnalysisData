@@ -1,6 +1,7 @@
 # Exploratory Analysis
 
-All data was pulled from https://www.streetfighter.com/6/buckler/ranking/league. Details around the spider can be found below.
+All data was pulled from https://www.streetfighter.com/6/buckler/ranking/league. The live dashboard with the visualizations can be found here: https://public.tableau.com/app/profile/austin.domer5220/viz/SF6MasterAnalysis/SF6_Analysis. 
+Details around the spider can be found below.
 
 The initial randomly selected sample size for this analysis was 29890 profiles. At the time of data extraction (9.8.23 6:30 AM PST), the total number of master rank players was 57476. In the August patch, Master Rating (MR) as a system was introduced to provide elo rankings for characters within the Master league. Anyone who was in Master that hasn't played a game since that patch would flag with a MR of 0. From this random pull, there were a total of 2200 selected profiles that hadn't played a ranked game since the August patch. These profiles will be treated as null as they may not reflect the current state of the meta, and their prior character's data isn't available with this method of scraping. Removing these from the dataset, grants a final sample size of 27691. Using a confidence level of 95%, we get an expected margin of error of 0.42% for the results. At the time of writing this analysis, the Master rank is comprised of the top 1.9% of players across SF6's playerbase. Given all players in this sample are master rank, it's safe to assume they've played enough games to have a solid understanding of the game and their character.
 
