@@ -37,8 +37,8 @@ class StreetFighterSpider(scrapy.Spider):
     # players_per_rank = {'m': 55779, 'd': 131548, 'p': 461286, 'g': 334709, 's': 382729, 'b': 260837, 'i': 258157}
    
 
-    # Data as of 9.7.23 5:30 PM PST
-    players_per_rank = {'m': 57476 }
+    # Data as of 9.7.23 8:00 PM PST.
+    players_per_rank = {'m': 57556 }
     pages_per_rank = {}
     current_page = 0
 
@@ -73,10 +73,9 @@ class StreetFighterSpider(scrapy.Spider):
             yield from self.request_rank_pages(rank, cookies_dict)  # Pass cookies dict
 
 
-    # min sample size based on a 57.5K pop size @ 95% confidence with a 2% margin of error is 2305. Will be rounding up to 2500.
     def request_rank_pages(self, rank, cookies):
         start_page, end_page = self.pages_per_rank[rank]
-        while len(self.valid_samples_per_rank[rank]) < 2500 and len(self.sampled_pages_per_rank[rank]) < (
+        while len(self.valid_samples_per_rank[rank]) < 29890 and len(self.sampled_pages_per_rank[rank]) < (
                 end_page - start_page + 1):
             if self.rank_flags[rank]:
                 # If the flag is True, indicating the threshold is reached, stop processing for the current rank
@@ -148,8 +147,8 @@ class StreetFighterSpider(scrapy.Spider):
                     # added desired json outputs, removed mention of win #'s and rank
                 self.valid_samples_per_rank[rank].append(
                     [username, masters_data['league_info']['master_rating'], masters_data['character_name']])
-                logging.info(f"{rank}: {len(self.valid_samples_per_rank[rank])}/{2500}")
-                if len(self.valid_samples_per_rank[rank]) >= 2500:
+                logging.info(f"{rank}: {len(self.valid_samples_per_rank[rank])}/{29890}")
+                if len(self.valid_samples_per_rank[rank]) >= 29890:
                         self.write_to_csv(rank)
                         self.valid_samples_per_rank[rank] = []  # Reset the samples for the rank
                         self.rank_flags[rank] = True  # Set the flag to True for the rank
