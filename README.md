@@ -1,6 +1,6 @@
 # Exploratory Analysis
 
-All data was pulled from https://www.streetfighter.com/6/buckler/ranking/league.
+All data was pulled from https://www.streetfighter.com/6/buckler/ranking/league. Details around the spider can be found below.
 
 The initial randomly selected sample size for this analysis was 29890 profiles. At the time of data extraction (9.8.23 6:30 AM PST), the total number of master rank players was 57476. In the August patch, Master Rating (MR) as a system was introduced to provide elo rankings for characters within the Master league. Anyone who was in Master that hasn't played a game since that patch would flag with a MR of 0. From this random pull, there were a total of 2200 selected profiles that hadn't played a ranked game since the August patch. These profiles will be treated as null as they may not reflect the current state of the meta, and their prior character's data isn't available with this method of scraping. Removing these from the dataset, grants a final sample size of 27691. Using a confidence level of 95%, we get an expected margin of error of 0.42% for the results. At the time of writing this analysis, the Master rank is comprised of the top 1.9% of players across SF6's playerbase. Given all players in this sample are master rank, it's safe to assume they've played enough games to have a solid understanding of the game and their character.
 
@@ -28,7 +28,7 @@ This visualization maps aggregate master rating by character against the total c
 
 Taking this a step further to build out a fraud index per character to indicate whether some characters have a higher likelihood of 'carrying' their player through the ranks would be an interesting next step.
 
-## Street Fighter Spider
+# Street Fighter Spider
 
 Street Fighter Spider is a Python web scraper based on Scrapy that scrapes the Street Fighter gaming site for player data. It uses Selenium for dealing with JavaScript and to control the flow of the application.
 
