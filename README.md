@@ -1,4 +1,4 @@
-# Exploratory Analysis
+# Analysis
 
 All data was pulled from https://www.streetfighter.com/6/buckler/ranking/league. The live dashboard with the visualizations can be found here: https://public.tableau.com/app/profile/austin.domer5220/viz/SF6MasterAnalysis/SF6_Analysis. 
 Details around the spider can be found below.
