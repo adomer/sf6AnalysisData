@@ -118,31 +118,10 @@ class StreetFighterSpider(scrapy.Spider):
             script_tag = response.css('script#__NEXT_DATA__::text').get()
             if script_tag is not None:
                 json_data = json.loads(script_tag)
-                # commenting out - not relevant for this analysis
-                # characters_data = json_data['props']['pageProps']['play']['character_win_rates']
-                # added to query for master rating
                 character_league_infos = json_data['props']['pageProps']['play']['character_league_infos']
-                # commenting out - not relevant for this analysis
-                # total_battle_stats = json_data['props']['pageProps']['play']['battle_stats']
-
-                # commenting out - not relevant for this analysis
-                # ranked_battle_count = total_battle_stats['rank_match_play_count']
-                
-                # commenting out - not relevant for this analysis
-                # character_data = next(
-                #     (data for data in characters_data if data['character_name'].lower() == character.lower()), None)
 
                 # initialize variable looking at max rating value across characters
                 masters_data = max(character_league_infos, key=lambda x:x['league_info']['master_rating'])
-
-                # commenting out - not relevant for this analysis
-                # if character_data is not None and ranked_battle_count >= 90:
-                #     if character_data['battle_count'] != 0:
-                #         win_ratio = character_data['win_count'] / character_data['battle_count']
-                #         scaled_win_count = win_ratio * ranked_battle_count
-                #     else:
-                #         win_ratio = 0
-                #         scaled_win_count = 0
 
                     # added desired json outputs, removed mention of win #'s and rank
                 self.valid_samples_per_rank[rank].append(
