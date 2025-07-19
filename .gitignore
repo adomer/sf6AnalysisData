@@ -1,16 +1,102 @@
-__pycache__
-*.pyc
-*.pyo
-*.pyd
-.Python
-env/
-build/
-dist/
-*.egg-info/
-.idea/
-.vscode/
-debug.log
-geckodriver.log
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
 
-#scrapy requests
-/sf6analysisData/.scrapy
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+
+# Virtual environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Project-specific
+*.log
+geckodriver.log
+debug.log
+fighting_stats_debug.log
+*.csv
+data/
+output/
+master_data*/
+config.json
+personal_config.json
+
+# Legacy data directories
+data15jul2023/
+master_data08sep2023/
+
+# Claude Code files (development only)
+CLAUDE.md
+
+# Firefox profile data
+firefox_profile/
+
+# Scrapy cache
+.scrapy/
+
+# Selenium
+chromedriver*
+geckodriver*
+*.exe
+
+# Node modules
+node_modules/
+package-lock.json

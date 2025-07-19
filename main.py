@@ -1,5 +1,6 @@
 from scrapy.crawler import CrawlerProcess
-from spiders.street_fighter_spider import StreetFighterSpider, RetryChangeProxyMiddleware, RandomUserAgentMiddleware
+from spiders.street_fighter_spider import StreetFighterSpider
+from spiders.middlewares import RetryChangeProxyMiddleware, RandomUserAgentMiddleware
 
 import logging
 from config import LOGGING_CONFIG
