@@ -12,8 +12,8 @@ COMMON_SPIDER_SETTINGS = {
     'RETRY_HTTP_CODES': [403, 401, 429, 405],
     'DOWNLOADER_MIDDLEWARES': {
         'scrapy.downloadermiddlewares.retry.RetryMiddleware': None,
-        '__main__.RetryChangeProxyMiddleware': 540,
-        '__main__.RandomUserAgentMiddleware': 400,
+        'spiders.middlewares.RetryChangeProxyMiddleware': 540,
+        'spiders.middlewares.RandomUserAgentMiddleware': 400,
         'scrapy.downloadermiddlewares.httpcache.HttpCacheMiddleware': 300,
     },
     'HTTPCACHE_ENABLED': True,
@@ -21,12 +21,12 @@ COMMON_SPIDER_SETTINGS = {
     'HTTPCACHE_DIR': 'httpcache',
     'HTTPCACHE_IGNORE_HTTP_CODES': [],  # HTTP codes not to cache
     'HTTPCACHE_STORAGE': 'scrapy.extensions.httpcache.FilesystemCacheStorage',
-    'DOWNLOAD_DELAY': 0.5,
-    'CONCURRENT_REQUESTS': 32,  # Set the maximum number of concurrent requests
+    'DOWNLOAD_DELAY': 1.0,  # Increased delay for more respectful scraping
+    'CONCURRENT_REQUESTS': 1,  # Single request for stats page
     'AUTOTHROTTLE_ENABLED': True,  # Enable AutoThrottle to automatically adjust concurrency and delay
-    'AUTOTHROTTLE_START_DELAY': 0.5,  # The initial download delay
+    'AUTOTHROTTLE_START_DELAY': 1.0,  # Increased initial download delay
     'AUTOTHROTTLE_MAX_DELAY': 60,  # The maximum download delay to be set in case of high latencies
-    'AUTOTHROTTLE_TARGET_CONCURRENCY': 1.0,  # The average number of requests Scrapy should be sending in parallel to each remote server
+    'AUTOTHROTTLE_TARGET_CONCURRENCY': 1.0,  # Single concurrent request to each remote server
     'USER_AGENTS': [
         'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3',
         'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
