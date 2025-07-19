@@ -84,7 +84,7 @@ data15jul2023/
 master_data08sep2023/
 
 # Claude Code files (development only)
-CLAUDE.md
+.claude/
 
 # Firefox profile data
 firefox_profile/
