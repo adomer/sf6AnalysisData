@@ -78,7 +78,7 @@ The project consists of several Python files organized into the following struct
 - `config.py`
 - `spiders/street_fighter_spider.py`
 - `spiders/middlewares.py`
--`spiders/fighting_stats_spider.py`
+- `spiders/fighting_stats_spider.py`
 
 `main.py` is the main script that configures and starts a Scrapy process with both the `StreetFighterSpider` and the `FightingStatsSpider` spiders.
 

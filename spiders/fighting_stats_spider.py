@@ -100,13 +100,13 @@ class FightingStatsSpider(scrapy.Spider):
         
         all_data = []
         
-        # Define months to scrape (YYYYMM format)
+        # Define months to scrape (YYYYMM format) - All available months
         months_to_scrape = [
             ("202502", "02/2025"),
             ("202503", "03/2025"),
             ("202504", "04/2025"),
             ("202505", "05/2025"),
-            ("202506", "06/2025")  # Current month
+            ("202506", "06/2025")
         ]
         
         # Define leagues to scrape (matching street_fighter_spider)
@@ -128,10 +128,6 @@ class FightingStatsSpider(scrapy.Spider):
                 # Navigate to the month-specific URL
                 self.driver.get(month_url)
                 time.sleep(5)  # Wait for page to load
-                
-                # Dismiss cookie dialog on first load
-                if month_code == "202502":  # Only on first month
-                    self.dismiss_cookie_dialog()
                 
                 # Check that we're on the right page
                 current_url = self.driver.current_url
@@ -167,42 +163,10 @@ class FightingStatsSpider(scrapy.Spider):
         
         return all_data
     
-    def dismiss_cookie_dialog(self):
-        """Dismiss cookie dialog if present"""
-        try:
-            # Look for cookie dialog and dismiss it
-            cookie_selectors = [
-                "//button[contains(@class, 'CybotCookiebot')]",
-                "//button[contains(text(), 'Accept')]",
-                "//button[contains(text(), 'OK')]",
-                "//div[@id='CybotCookiebotDialog']//button",
-                "//*[contains(@class, 'cookie')]//button"
-            ]
-            
-            for selector in cookie_selectors:
-                try:
-                    cookie_button = self.driver.find_element(By.XPATH, selector)
-                    if cookie_button.is_displayed():
-                        cookie_button.click()
-                        self.custom_logger.info(f"Dismissed cookie dialog using selector: {selector}")
-                        time.sleep(2)
-                        return True
-                except:
-                    continue
-            
-            self.custom_logger.info("No cookie dialog found or already dismissed")
-            return True
-            
-        except Exception as e:
-            self.custom_logger.warning(f"Error handling cookie dialog: {str(e)}")
-            return False
 
     def select_league(self, league_index, league_name):
         """Select a specific league from the aside navigation"""
         try:
-            # First dismiss any cookie dialog
-            self.dismiss_cookie_dialog()
-            
             # Wait for the league selection area to be present
             aside_xpath = "/html/body/div/div/article[2]/aside[2]"
             WebDriverWait(self.driver, 10).until(
@@ -234,8 +198,89 @@ class FightingStatsSpider(scrapy.Spider):
             self.custom_logger.error(f"Error selecting league {league_name}: {str(e)}")
             raise
     
+    def scroll_to_load_full_table(self):
+        """Scroll both horizontally and vertically through the table to ensure all content is loaded"""
+        try:
+            self.custom_logger.info("Scrolling to load full table content (both horizontal and vertical)...")
+            
+            # Get the table element
+            table_xpath = "//*[@id='tableArea']/div[1]/table[1]"
+            table = self.driver.find_element(By.XPATH, table_xpath)
+            
+            # Get table dimensions
+            table_width = self.driver.execute_script("return arguments[0].scrollWidth;", table)
+            table_height = self.driver.execute_script("return arguments[0].scrollHeight;", table)
+            viewport_width = self.driver.execute_script("return window.innerWidth;")
+            viewport_height = self.driver.execute_script("return window.innerHeight;")
+            
+            self.custom_logger.info(f"Table dimensions: {table_width}x{table_height}, Viewport: {viewport_width}x{viewport_height}")
+            
+            # First, scroll vertically to ensure we're positioned at the table
+            self.custom_logger.info("Scrolling vertically to position table properly...")
+            self.driver.execute_script("arguments[0].scrollIntoView(true);", table)
+            time.sleep(0.5)
+            
+            # Vertical scrolling through the table to load all rows
+            self.driver.execute_script("arguments[0].scrollIntoView(false);", table)
+            time.sleep(0.5)
+            self.driver.execute_script("arguments[0].scrollIntoView(true);", table)
+            time.sleep(0.5)
+            
+            # Now drag the table horizontally to load all content
+            self.custom_logger.info("Dragging table horizontally to load all character columns...")
+            
+            # Import ActionChains for drag operations
+            from selenium.webdriver.common.action_chains import ActionChains
+            actions = ActionChains(self.driver)
+            
+            # Calculate how much we need to reveal (hidden content)
+            hidden_content = table_width - viewport_width
+            self.custom_logger.info(f"Hidden content width: {hidden_content}px")
+            
+            # Use single larger drag to cover the full table width with headroom
+            drag_distance = 850  # Cover full 751px width plus extra headroom
+            
+            self.custom_logger.info(f"Performing single drag of {drag_distance}px to cover full table")
+            
+            # Single drag left to reveal all content
+            try:
+                actions.move_to_element(table).click_and_hold().move_by_offset(-drag_distance, 0).release().perform()
+                time.sleep(0.5)
+                self.custom_logger.info("Completed single drag (leftward to show all characters)")
+            except Exception as drag_error:
+                self.custom_logger.warning(f"Single drag failed: {drag_error}")
+            
+            # Give time for content to fully load
+            time.sleep(1)
+            
+            # Now position back to the very beginning to see early characters
+            self.custom_logger.info("Positioning back to beginning to show early characters...")
+            try:
+                # Drag far right to show the early characters (reduced offset to stay within viewport)
+                actions.move_to_element(table).click_and_hold().move_by_offset(750, 0).release().perform()
+                time.sleep(0.5)
+                self.custom_logger.info("Positioned at beginning - early characters should now be visible")
+            except Exception as position_error:
+                self.custom_logger.warning(f"Positioning to beginning failed: {position_error}")
+            
+            # Try JavaScript scrollLeft as backup to ensure proper positioning
+            self.custom_logger.info("Using JavaScript scroll to ensure proper positioning...")
+            try:
+                self.driver.execute_script("arguments[0].scrollLeft = 0;", table)
+                time.sleep(0.5)
+            except Exception as js_error:
+                self.custom_logger.warning(f"JavaScript scroll backup failed: {js_error}")
+            
+            self.custom_logger.info("Completed table dragging and positioning for extraction")
+            
+            self.custom_logger.info("Completed full table scrolling (horizontal and vertical)")
+            
+        except Exception as e:
+            self.custom_logger.warning(f"Error during table scrolling: {str(e)}")
+            # Continue with extraction even if scrolling fails
+    
     def parse_fighting_stats_data(self, month, league="Master"):
-        """Parse the tabular fighting stats data"""
+        """Parse the tabular fighting stats data using two-pass approach"""
         try:
             # Wait for table to load with longer timeout - using correct table ID
             table_xpath = "//*[@id='tableArea']/div[1]/table[1]"
@@ -243,76 +288,42 @@ class FightingStatsSpider(scrapy.Spider):
             WebDriverWait(self.driver, 20).until(
                 EC.presence_of_element_located((By.XPATH, table_xpath))
             )
-            self.custom_logger.info("Table found, proceeding with data extraction")
+            self.custom_logger.info("Table found, proceeding with two-pass data extraction")
             
-            data = []
+            # Initial setup - ensure we're positioned at the beginning
+            table = self.driver.find_element(By.XPATH, table_xpath)
+            self.driver.execute_script("arguments[0].scrollIntoView(true);", table)
+            self.driver.execute_script("arguments[0].scrollLeft = 0;", table)
+            time.sleep(1)
             
             # Extract character names from header images
             character_names = self.extract_character_names()
             self.custom_logger.info(f"Found {len(character_names)} characters: {character_names}")
             
-            # Extract table body data using the correct table path
-            table = self.driver.find_element(By.XPATH, table_xpath)
-            tbody = table.find_element(By.TAG_NAME, "tbody")
-            rows = tbody.find_elements(By.TAG_NAME, "tr")
-            self.custom_logger.info(f"Found {len(rows)} rows in table body")
+            # FIRST PASS: Extract from initial position (early characters)
+            self.custom_logger.info("FIRST PASS: Extracting early characters from initial position")
+            first_pass_data = self.extract_table_data(table_xpath, character_names, month, league, "first_pass")
             
-            for row_index, row in enumerate(rows):
-                try:
-                    # Get the row character name from the character order (rows follow same order as columns)
-                    if row_index < len(character_names):
-                        row_character = character_names[row_index].upper()
-                    else:
-                        row_character = f"ROW_{row_index + 1}"
-                    
-                    # Get all td elements for this row (character data)
-                    cells = row.find_elements(By.TAG_NAME, "td")
-                    self.custom_logger.info(f"Row {row_index + 1} ({row_character}): Found {len(cells)} data cells")
-                    
-                    # Extract data for each character (td elements map to characters)
-                    # Note: Column 1 is "Total" for each character, actual matchups start at Column 2
-                    for cell_index, cell in enumerate(cells):
-                        cell_value = cell.text.strip()
-                        
-                        if cell_index == 0:
-                            # First column is the character's total stats
-                            data.append({
-                                'character_name': 'TOTAL',
-                                'month': month,
-                                'league': league,
-                                'row_type': row_character,
-                                'value': cell_value,
-                                'row_index': row_index + 1,
-                                'column_index': cell_index + 1,
-                                'source': 'tabular_extraction'
-                            })
-                        else:
-                            # Matchup columns start at index 1, map to character_names[cell_index - 1]
-                            matchup_index = cell_index - 1
-                            if matchup_index < len(character_names):
-                                column_character = character_names[matchup_index]
-                                
-                                data.append({
-                                    'character_name': column_character.upper(),
-                                    'month': month,
-                                    'league': league,
-                                    'row_type': row_character,
-                                    'value': cell_value,
-                                    'row_index': row_index + 1,
-                                    'column_index': cell_index + 1,
-                                    'source': 'tabular_extraction'
-                                })
-                    
-                    # Log first few entries for verification
-                    if row_index == 0 and len(cells) > 0:
-                        self.custom_logger.info(f"First row sample - {row_character}: {cells[0].text[:50]}...")
-                
-                except Exception as e:
-                    self.custom_logger.warning(f"Error processing row {row_index}: {str(e)}")
-                    continue
+            # Drag right to reveal late characters
+            self.custom_logger.info("Dragging right to reveal late characters...")
+            from selenium.webdriver.common.action_chains import ActionChains
+            actions = ActionChains(self.driver)
+            try:
+                actions.move_to_element(table).click_and_hold().move_by_offset(-850, 0).release().perform()
+                time.sleep(1)
+                self.custom_logger.info("Successfully dragged to show late characters")
+            except Exception as drag_error:
+                self.custom_logger.warning(f"Drag failed: {drag_error}")
             
-            self.custom_logger.info(f"Successfully extracted {len(data)} data points for {month}")
-            return data
+            # SECOND PASS: Extract from shifted position (late characters)
+            self.custom_logger.info("SECOND PASS: Extracting late characters from shifted position")
+            second_pass_data = self.extract_table_data(table_xpath, character_names, month, league, "second_pass")
+            
+            # Combine and deduplicate data
+            combined_data = self.deduplicate_table_data(first_pass_data + second_pass_data)
+            
+            self.custom_logger.info(f"Successfully extracted {len(combined_data)} data points for {month} (after deduplication)")
+            return combined_data
             
         except Exception as e:
             self.custom_logger.error(f"Error parsing fighting stats data for {month}: {str(e)}")
@@ -326,6 +337,105 @@ class FightingStatsSpider(scrapy.Spider):
                 pass
             return []
     
+    def extract_table_data(self, table_xpath, character_names, month, league, pass_name):
+        """Extract data from table at current position"""
+        try:
+            data = []
+            table = self.driver.find_element(By.XPATH, table_xpath)
+            tbody = table.find_element(By.TAG_NAME, "tbody")
+            rows = tbody.find_elements(By.TAG_NAME, "tr")
+            
+            self.custom_logger.info(f"{pass_name}: Found {len(rows)} rows in table body")
+            
+            for row_index, row in enumerate(rows):
+                try:
+                    # Get the row character name from the character order
+                    if row_index < len(character_names):
+                        row_character = character_names[row_index].upper()
+                    else:
+                        row_character = f"ROW_{row_index + 1}"
+                    
+                    # Get all td elements for this row
+                    cells = row.find_elements(By.TAG_NAME, "td")
+                    
+                    # Extract data for each character
+                    for cell_index, cell in enumerate(cells):
+                        cell_value = cell.text.strip()
+                        
+                        if cell_index == 0:
+                            # First column is the character's total stats
+                            data.append({
+                                'character_name': 'TOTAL',
+                                'month': month,
+                                'league': league,
+                                'row_type': row_character,
+                                'value': cell_value,
+                                'row_index': row_index + 1,
+                                'column_index': cell_index + 1,
+                                'source': f'tabular_extraction_{pass_name}'
+                            })
+                        else:
+                            # Matchup columns start at index 1
+                            matchup_index = cell_index - 1
+                            if matchup_index < len(character_names):
+                                column_character = character_names[matchup_index]
+                                
+                                data.append({
+                                    'character_name': column_character.upper(),
+                                    'month': month,
+                                    'league': league,
+                                    'row_type': row_character,
+                                    'value': cell_value,
+                                    'row_index': row_index + 1,
+                                    'column_index': cell_index + 1,
+                                    'source': f'tabular_extraction_{pass_name}'
+                                })
+                    
+                    # Log sample for first row
+                    if row_index == 0 and len(cells) > 0:
+                        self.custom_logger.info(f"{pass_name} - First row sample - {row_character}: {cells[0].text[:50]}...")
+                
+                except Exception as e:
+                    self.custom_logger.warning(f"{pass_name}: Error processing row {row_index}: {str(e)}")
+                    continue
+            
+            self.custom_logger.info(f"{pass_name}: Extracted {len(data)} data points")
+            return data
+            
+        except Exception as e:
+            self.custom_logger.error(f"{pass_name}: Error extracting table data: {str(e)}")
+            return []
+    
+    def deduplicate_table_data(self, combined_data):
+        """Remove duplicate entries and keep the one with non-empty value"""
+        try:
+            # Create a dictionary to track unique entries
+            unique_data = {}
+            
+            for entry in combined_data:
+                # Create unique key based on character_name, row_type, column_index
+                key = (entry['character_name'], entry['row_type'], entry['column_index'])
+                
+                # If this is the first occurrence or current entry has value while stored doesn't
+                if key not in unique_data:
+                    unique_data[key] = entry
+                elif entry['value'] and (not unique_data[key]['value'] or unique_data[key]['value'] in ['', '-']):
+                    # Prefer entries with actual values
+                    unique_data[key] = entry
+            
+            # Convert back to list and update source to indicate deduplication
+            deduplicated_data = []
+            for entry in unique_data.values():
+                entry['source'] = 'tabular_extraction_deduplicated'
+                deduplicated_data.append(entry)
+            
+            self.custom_logger.info(f"Deduplication: {len(combined_data)} -> {len(deduplicated_data)} entries")
+            return deduplicated_data
+            
+        except Exception as e:
+            self.custom_logger.error(f"Error deduplicating data: {str(e)}")
+            return combined_data  # Return original data if deduplication fails
+    
     def extract_character_names(self):
         """Extract character names from row header span elements"""
         character_names = []
@@ -335,6 +445,10 @@ class FightingStatsSpider(scrapy.Spider):
             table_xpath = "//*[@id='tableArea']/div[1]/table[1]"
             table = self.driver.find_element(By.XPATH, table_xpath)
             
+            # Ensure we scroll through table to load all rows before extraction
+            self.custom_logger.info("Ensuring table is fully loaded before character extraction...")
+            self.scroll_to_load_full_table()
+            
             # Look for character names in row headers - specifically in th/div/span[1] elements
             tbody = table.find_element(By.TAG_NAME, "tbody")
             rows = tbody.find_elements(By.TAG_NAME, "tr")
@@ -342,18 +456,25 @@ class FightingStatsSpider(scrapy.Spider):
             
             for i, row in enumerate(rows):
                 try:
-                    # Look for th/div/span[1] in each row
+                    # Look for th/div/span[1] in each row without individual scrolling
                     span_xpath = ".//th/div/span[1]"
                     span_element = row.find_element(By.XPATH, span_xpath)
                     character_name = span_element.text.strip().lower()
                     
                     if character_name:
                         character_names.append(character_name)
-                        self.custom_logger.info(f"Row {i+1}: Found character '{character_name}'")
+                        if i < 5 or i % 5 == 0:  # Only log every 5th character to reduce output
+                            self.custom_logger.info(f"Row {i+1}: Found character '{character_name}'")
                 
                 except Exception as e:
                     self.custom_logger.warning(f"Error extracting character from row {i+1}: {str(e)}")
                     continue
+            
+            # If we found characters but not all expected ones, log the difference
+            expected_count = 26  # Total expected SF6 characters
+            if character_names and len(character_names) < expected_count:
+                self.custom_logger.warning(f"Only found {len(character_names)} characters, expected {expected_count}")
+                self.custom_logger.info(f"Found characters: {character_names}")
             
             # If no characters found from span elements, use the verified character order as fallback
             if not character_names:
@@ -369,6 +490,13 @@ class FightingStatsSpider(scrapy.Spider):
         
         except Exception as e:
             self.custom_logger.error(f"Error extracting character names: {str(e)}")
+            # Return fallback character list
+            character_names = [
+                "elena", "e. honda", "dhalsim", "kimberly", "jp", "dee jay", "terry", "luke", 
+                "marisa", "blanka", "lily", "a.k.i.", "chun-li", "m. bison", "rashid", "jamie", 
+                "guile", "juri", "ken", "ryu", "cammy", "mai", "manon", "ed", "akuma", "zangief"
+            ]
+            self.custom_logger.info(f"Using fallback character order with {len(character_names)} characters")
         
         return character_names
     
