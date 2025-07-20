@@ -102,11 +102,11 @@ class FightingStatsSpider(scrapy.Spider):
         
         # Define months to scrape (YYYYMM format)
         months_to_scrape = [
-            ("202502", "022025"),
-            ("202503", "032025"),
-            ("202504", "042025"),
-            ("202505", "052025"),
-            ("202506", "062025")  # Current month
+            ("202502", "02/2025"),
+            ("202503", "03/2025"),
+            ("202504", "04/2025"),
+            ("202505", "05/2025"),
+            ("202506", "06/2025")  # Current month
         ]
         
         # Define leagues to scrape (matching street_fighter_spider)
@@ -277,10 +277,10 @@ class FightingStatsSpider(scrapy.Spider):
                         if cell_index == 0:
                             # First column is the character's total stats
                             data.append({
-                                'character_name': row_character,
+                                'character_name': 'TOTAL',
                                 'month': month,
                                 'league': league,
-                                'row_type': 'TOTAL',
+                                'row_type': row_character,
                                 'value': cell_value,
                                 'row_index': row_index + 1,
                                 'column_index': cell_index + 1,
