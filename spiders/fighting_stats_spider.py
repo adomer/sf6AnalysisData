@@ -129,8 +129,6 @@ class FightingStatsSpider(scrapy.Spider):
                 self.driver.get(month_url)
                 time.sleep(5)  # Wait for page to load
                 
-                # Skip cookie dialog handling as it's not working properly
-                
                 # Check that we're on the right page
                 current_url = self.driver.current_url
                 self.custom_logger.info(f"Current URL after navigation: {current_url}")
@@ -165,35 +163,6 @@ class FightingStatsSpider(scrapy.Spider):
         
         return all_data
     
-    def dismiss_cookie_dialog(self):
-        """Dismiss cookie dialog if present"""
-        try:
-            # Look for cookie dialog and dismiss it
-            cookie_selectors = [
-                "//button[contains(@class, 'CybotCookiebot')]",
-                "//button[contains(text(), 'Accept')]",
-                "//button[contains(text(), 'OK')]",
-                "//div[@id='CybotCookiebotDialog']//button",
-                "//*[contains(@class, 'cookie')]//button"
-            ]
-            
-            for selector in cookie_selectors:
-                try:
-                    cookie_button = self.driver.find_element(By.XPATH, selector)
-                    if cookie_button.is_displayed():
-                        cookie_button.click()
-                        self.custom_logger.info(f"Dismissed cookie dialog using selector: {selector}")
-                        time.sleep(2)
-                        return True
-                except:
-                    continue
-            
-            self.custom_logger.info("No cookie dialog found or already dismissed")
-            return True
-            
-        except Exception as e:
-            self.custom_logger.warning(f"Error handling cookie dialog: {str(e)}")
-            return False
 
     def select_league(self, league_index, league_name):
         """Select a specific league from the aside navigation"""
