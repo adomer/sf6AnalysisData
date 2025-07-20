@@ -43,8 +43,8 @@ output/
 **Fighting Stats CSV:**
 ```csv
 character_name,month,league,row_type,value,row_index,column_index,source
-E. HONDA,022025,Master,E. HONDA,-,2,3,tabular_extraction
-KIMBERLY,022025,Master,E. HONDA,5.288,2,4,tabular_extraction
+E. HONDA,02/2025,Master,E. HONDA,-,2,3,tabular_extraction
+KIMBERLY,02/2025,Master,E. HONDA,5.288,2,4,tabular_extraction
 ```
 
 **Usage Statistics CSV:**
